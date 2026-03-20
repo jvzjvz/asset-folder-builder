@@ -22,7 +22,6 @@ func main() {
 
 		if entry.IsDir() && entry.Name() == "assets" {
 			found_asset_folder = true
-			fmt.Println("BADOOEY!")
 		}
 	}
 
@@ -36,6 +35,8 @@ func main() {
 		return
 	}
 
+	os.Chdir(asset_folder_path)
+
 	fmt.Println("Inside asset folder")
 	for _, entry := range asset_entries {
 		name := entry.Name()
@@ -44,11 +45,27 @@ func main() {
 			continue
 		}
 
-		split := strings.Split(name, "-")
-		fmt.Println(" ", split)
+		last_separator_index := strings.LastIndex(name, "-")
+		asset_name := name[last_separator_index+1:]
 
-		directory_names := split[:len(split)-1]
-		fmt.Println(" ", directory_names)
+		directory_name := strings.ReplaceAll(name[:last_separator_index], "-", "/")
+		fmt.Println("directory", directory_name)
 
+		fmt.Printf("%s -> %s + %s\n", name, directory_name, asset_name)
+
+		err := os.MkdirAll(directory_name, os.ModePerm)
+		if err != nil {
+			fmt.Println("directory already exists")
+		} else {
+			fmt.Println("sucessfully created directory")
+		}
+
+		new_asset_location := directory_name + "/" + asset_name
+		err = os.Rename(name, new_asset_location)
+		if err != nil {
+			continue
+		} else {
+			fmt.Printf("moved %s to %s", name, new_asset_location)
+		}
 	}
 }
